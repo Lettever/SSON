@@ -1,0 +1,14 @@
+*
+
+# Needed files
+!.gitignore
+!justfile
+
+# Source files
+!src/tokens.d
+!src/lexer.d
+!src/parser.d
+!src/main.d
+
+# Examples
+!example/*
