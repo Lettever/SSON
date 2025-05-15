@@ -1,6 +1,18 @@
 import std;
 
 void main() {
+    auto arr = [
+        "function",
+        "fun",
+        "fn",
+        "union",
+        "fnt",
+    ];
+    foreach(a; arr) {
+        bool b = isOk("function", a);
+        writeln(b);
+    }
+
     Nullable!int x = 5;
     Nullable!int none = Nullable!int.init;
     auto chained = x  
@@ -16,6 +28,44 @@ void main() {
     // Fallback returning a Nullable!int directly
     auto fallback2 = or_else!(int)(none, () => nullable(200));
     writeln(fallback2); // Output: Nullable(200)
+    auto a = wrap(() => div(10.0, 0.0))
+        .or_else(() => 5.0);
+    writeln(a);
+}
+
+double div(double a, double b) {
+    if (b == 0.0) {
+        throw new Exception("Bye");
+    }
+    return a / b;
+}
+Nullable!T wrap(T)(T function() fn) {
+    try {
+        return nullable(fn());
+    } catch (Exception e) {
+        return Nullable!T.init;
+    }
+}
+
+bool isOk(string haystack, string needle) {
+    int i = 0;
+    foreach(ch; needle) {
+        Nullable!int j = f(haystack, i, ch);
+        if (j.isNull()) {
+            writefln("Error at %s | %s | %s", i, haystack, ch);
+            return false;
+        }
+        i = j.get() + 1;
+    }
+    return true;
+}
+
+Nullable!int f(string haystack, int i, char ch) {
+    while (i < haystack.length) {
+        if (haystack[i] == ch) return nullable(i);
+        i += 1;
+    }
+    return Nullable!int.init;
 }
 
 Nullable!T and_then(T, U)(Nullable!U val, T delegate(U) func) {

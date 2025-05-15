@@ -84,6 +84,7 @@ void main() {
         writeln("Parsing failed");
         return;
     }
+    writeln(test);
     writeln(parsed.get().toPrettyString());
 }
 
