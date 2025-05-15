@@ -1,9 +1,10 @@
 *
+
+# Source files
 !src/tokens.d
 !src/lexer.d
 !src/parser.d
 !src/main.d
-# *.exe
-# *.pdb
-# a.txt
-# func.d
+
+# Examples
+!examples/*
