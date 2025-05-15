@@ -123,7 +123,6 @@ struct Lexer {
     }
     
     private Nullable!Token next() {
-        
         if (i >= str.length) return makeAndAdvance(TokenType.EOF, "");
         char ch = str[i];
         if (ch in TokenTypeMap) {
