@@ -68,7 +68,7 @@ struct Token {
     }
 }
 alias TokenArray = Token[];
-
+/*
 void main() {
     string filePath = "./test.lml";
     string test = readText(filePath);
@@ -86,7 +86,7 @@ void main() {
     }
     writeln(test);
     writeln(parsed.get().toPrettyString());
-}
+}*/
 
 TokenArray removeWhiteSpace(TokenArray tokens) => tokens.filter!((x) => x.type != TokenType.WhiteSpace).array();
 

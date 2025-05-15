@@ -1,3 +1,6 @@
-*.exe
-*.pdb
-a.txt
+!
+
+# *.exe
+# *.pdb
+# a.txt
+# func.d
