@@ -7,6 +7,5 @@
 !src/main.d
 
 # Examples
-!example/array.lml
-!example/
+#!example/
 !example/*
