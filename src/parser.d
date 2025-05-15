@@ -36,6 +36,7 @@ struct Parser {
         auto number = tokens[i].getSpan();
         i += 1;
         if (number.length < 2) {
+            writeln(1);
             return JSONValue(sign * number.to!(int));
         }
         switch (number[1].toLower()) {
@@ -116,6 +117,7 @@ struct Parser {
     private Nullable!JSONValue parseDict() {
         if (info) { writeln("parsing dict at ", i); }
         // "{" (key "=" value)* "}"
+        
         auto dict = JSONValue((JSONValue[string]).init);
         
         while (i < tokens.length && !matches([TokenType.RightBrace])) {
@@ -170,6 +172,7 @@ struct Parser {
         if (tokens.length == 0) {
             return nullable(JSONValue());
         }
+        if (info) writeln("Done");
         return foo.parseValue();
     }
 }

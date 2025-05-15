@@ -20,12 +20,17 @@ dchar getC(string str, uint i, dchar ch) {
 }
 
 JSONValue foo(JSONValue json, string[] keys, JSONValue val) {
+	writeln("utils", json);
 	if (keys.length == 0) {
 		return val;
 	}
+	try {
 	if (keys[0] !in json) {
 		json[keys[0]] = JSONValue.emptyObject;
 	}
 	json[keys[0]] = foo(json[keys[0]], keys[1 .. $], val);
+	} catch (Exception e) {
+		writeln(e.message);
+	}
 	return json;
 }
