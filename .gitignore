@@ -5,10 +5,12 @@
 !justfile
 
 # Source files
+!src/
 !src/tokens.d
 !src/lexer.d
 !src/parser.d
 !src/main.d
 
 # Examples
+!example/
 !example/*
