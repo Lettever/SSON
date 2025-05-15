@@ -1,2 +1,2 @@
 run:
-    rdmd ./src/main.d ./src/parser.d ./src/tokens.d ./src/lexer.d
+    rdmd ./src/main.d ./src/parser.d ./src/token.d ./src/lexer.d ./src/utils.d
