@@ -1,6 +1,7 @@
 *
 
 # Needed files
+!README.md
 !.gitignore
 !justfile
 
