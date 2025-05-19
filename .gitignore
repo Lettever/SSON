@@ -15,5 +15,5 @@
 !src/utils.d
 
 # Examples
-!example/
-!example/*
+!examples/
+!examples/*
