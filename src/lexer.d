@@ -21,14 +21,14 @@ struct Lexer {
     }
     
     private Nullable!Token next() {
-        if (i >= str.length) return makeAndAdvance(TokenType.EOF, "");
+        if (i >= str.length) return nullable(makeAndAdvance(TokenType.EOF, ""));
         char ch = str[i];
         if (ch in TokenTypeMap) {
             auto t = makeAndAdvance(TokenTypeMap[ch], ch.to!(string));
             col += 1;
-            return t;
+            return nullable(t);
         }
-        if (ch.isAlpha()) return lexIdentifier();
+        if (ch.isAlpha()) return nullable(lexIdentifier());
         //{
         //    string parsedIdentifier = tokenizeIdentifier();
         //    auto type = TokenTypeMapKeyword.get(parsedIdentifier, TokenType.Identifier);
@@ -44,7 +44,7 @@ struct Lexer {
             }
             auto t = makeAndAdvance(TokenType.Number, parsedNumber.get());
             col += parsedNumber.get().length;
-            return t;
+            return nullable(t);
         }
         if (ch == '"' || ch == '\'') {
             int rowTemp = row, colTemp = col;
@@ -56,7 +56,7 @@ struct Lexer {
             auto t = makeAndAdvance(TokenType.String, tokenizedString.get());
             row = rowTemp;
             col = colTemp;
-            return t;
+            return nullable(t);
         }
         if (ch.isWhite()) {
             auto t = makeAndAdvance(TokenType.WhiteSpace, " ");
@@ -65,7 +65,7 @@ struct Lexer {
                 row += 1;
                 col = 1;
             }
-            return t;
+            return nullable(t);
         }
         writefln("i: %s, ch: %s", i, ch);
         i += 1;
