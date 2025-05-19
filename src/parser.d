@@ -27,7 +27,7 @@ struct Parser {
         return res;
     }
     
-    private Token lastToken() => return tokens[i - 1];
+    private Token lastToken() => tokens[i - 1];
     
     private JSONValue parseNumber() {
         if (info) writeln("parsing number at ", i);
