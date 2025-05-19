@@ -1,5 +1,6 @@
 - Fix error handling
 - Token:
+	- use SyntaxSymbol for the single space things
 	- Do error handling differently
 	- Fix is valid, ensure there is never another value after another
 - Lexer:
