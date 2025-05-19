@@ -29,14 +29,14 @@ struct Lexer {
             return t;
         }
         if (ch.isAlpha()) {
-            string parsedIdentifier = parseIdentifier();
+            string parsedIdentifier = tokenizeIdentifier();
             auto type = TokenTypeMapKeyword.get(parsedIdentifier, TokenType.Identifier);
             auto t = makeAndAdvance(type, parsedIdentifier);
             col += parsedIdentifier.length;
             return t;
         }
         if (ch.isDigit()) {
-            Nullable!string parsedNumber = parseNumber();
+            Nullable!string parsedNumber = tokenizeNumber();
             if (parsedNumber.isNull()) {
                 writeln("Invalid number at ", row, " ", col);
                 return Nullable!Token.init;
@@ -47,12 +47,12 @@ struct Lexer {
         }
         if (ch == '"' || ch == '\'') {
             int rowTemp = row, colTemp = col;
-            Nullable!string parsedString = parseString(ch, rowTemp, colTemp);
-            if (parsedString.isNull()) {
-                writeln("Invalid string at ", this.i);
+            Nullable!string tokenizedString = tokenizeString(ch, rowTemp, colTemp);
+            if (tokenizedString.isNull()) {
+                writeln("Invalid string at ", i);
                 return Nullable!Token.init;
             }
-            auto t = makeAndAdvance(TokenType.String, parsedString.get());
+            auto t = makeAndAdvance(TokenType.String, tokenizedString.get());
             row = rowTemp;
             col = colTemp;
             return t;
@@ -86,41 +86,41 @@ struct Lexer {
         return nullable(tokens);
     }
     
-    private string parseIdentifier() {
+    private string tokenizeIdentifier() {
         uint j = advanceWhile(str, i + 1, (x) => isAlphaNum(x) || x == '_' || x == '-');
         return str[i .. j];
     }
     
-    private Nullable!string parseNumber() {
+    private Nullable!string tokenizeNumber() {
         if (str[i] == '0' && str.getC(i + 1, '\0') != '.') {
-            return parseSpecialNumber();
+            return tokenizeSpecialNumber();
         }
         
-        uint j = parseIntegerPart(i);
+        uint j = tokenizeIntegerPart(i);
         if (str.getC(j, '\0') == '.') {
             if (!str.getC(j + 1, '\0').isDigit()) return Nullable!string.init;
-            j = parseDecimalPart(j);
+            j = tokenizeDecimalPart(j);
         }
         if (str.getC(j, '\0').toLower() == 'e') {
             dchar c = str.getC(j + 1, '\0');
             if (!c.isDigit() && c != '-' && c != '+') return Nullable!string.init;
-            j = parseExponentPart(j);
+            j = tokenizeExponentPart(j);
         }
         return nullable(str[i .. j]);
     }
 
-    private uint parseIntegerPart(uint i) {
+    private uint tokenizeIntegerPart(uint i) {
         return advanceWhile(str, i + 1, &isDigit);
     }
-    private uint parseDecimalPart(uint i) {
+    private uint tokenizeDecimalPart(uint i) {
         return advanceWhile(str, i + 1, &isDigit);
     }
-    private uint parseExponentPart(uint i) {
+    private uint tokenizeExponentPart(uint i) {
         if (str[i + 1] == '+' || str[i + 1] == '-') i += 1;
         return advanceWhile(str, i + 1, &isDigit);
     }
     
-    private Nullable!string parseSpecialNumber() {
+    private Nullable!string tokenizeSpecialNumber() {
         if (i == str.length - 1) return nullable("0");
         auto m = [
             'x': &isHexDigit,
@@ -137,7 +137,7 @@ struct Lexer {
         return nullable("0");
     }
     
-    private Nullable!string parseString(char delim, ref int rowTemp, ref int colTemp) {
+    private Nullable!string tokenizeString(char delim, ref int rowTemp, ref int colTemp) {
         ulong len = str.length;
         uint j = i + 1;
         
