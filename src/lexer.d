@@ -15,9 +15,9 @@ struct Lexer {
     
     static Nullable!TokenArray lex(string str) => Lexer(str, 0).impl();
     
-    private Nullable!Token makeAndAdvance(TokenType type, string span) {
+    private Token makeAndAdvance(TokenType type, string span) {
         i += span.length;
-        return nullable(Token(type, span, row, col));
+        return Token(type, span, row, col);
     }
     
     private Nullable!Token next() {
@@ -28,13 +28,14 @@ struct Lexer {
             col += 1;
             return t;
         }
-        if (ch.isAlpha()) {
-            string parsedIdentifier = tokenizeIdentifier();
-            auto type = TokenTypeMapKeyword.get(parsedIdentifier, TokenType.Identifier);
-            auto t = makeAndAdvance(type, parsedIdentifier);
-            col += parsedIdentifier.length;
-            return t;
-        }
+        if (ch.isAlpha()) return lexIdentifier();
+        //{
+        //    string parsedIdentifier = tokenizeIdentifier();
+        //    auto type = TokenTypeMapKeyword.get(parsedIdentifier, TokenType.Identifier);
+        //    auto t = makeAndAdvance(type, parsedIdentifier);
+        //    col += parsedIdentifier.length;
+        //    return t;
+        //}
         if (ch.isDigit()) {
             Nullable!string parsedNumber = tokenizeNumber();
             if (parsedNumber.isNull()) {
@@ -89,6 +90,14 @@ struct Lexer {
     private string tokenizeIdentifier() {
         uint j = advanceWhile(str, i + 1, (x) => isAlphaNum(x) || x == '_' || x == '-');
         return str[i .. j];
+    }
+    
+    private Token lexIdentifier() {
+        string parsedIdentifier = tokenizeIdentifier();
+        TokenType type = TokenTypeMapKeyword.get(parsedIdentifier, TokenType.Identifier);
+        Token t = makeAndAdvance(type, parsedIdentifier);
+        col += parsedIdentifier.length;
+        return t;
     }
     
     private Nullable!string tokenizeNumber() {
