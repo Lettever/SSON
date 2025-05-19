@@ -57,6 +57,18 @@ struct Token {
         return span;
     }
     
+    bool isValue() {
+        return (
+            type == TokenType.Number ||
+            type == TokenType.True ||
+            type == TokenType.False ||
+            type == TokenType.Null ||
+            type == TokenType.String ||
+            type == TokenType.Number ||
+            type == TokenType.Identifier
+        );
+    }
+    
     void print() {
         writeln("Type = ", type);
         writeln("Span = ", span);
@@ -72,7 +84,7 @@ TokenArray removeWhiteSpace(TokenArray tokens) => tokens.filter!((x) => x.type !
 bool isValid(TokenArray tokens) {
     for (int i = 0; i < tokens.length - 1; i++) {
         auto token = tokens[i], nextToken = tokens[i + 1];
-        if (token.type == nextToken.type && token.type == TokenType.Number) {
+        if (token.isValue() && nextToken.isValue()) {
             writeln("Bad at:");
             token.print();
             nextToken.print();
