@@ -1,25 +1,26 @@
 import std.stdio;
-
-import parser;
 import std.file;
 
+import parser;
+import lexer;
+import token;
+
 void main() {
-    string filePath = "./test3.lml";
+    string filePath = "./examples/keys.sson";
     string test = readText(filePath);
     auto tokens = Lexer.lex(test);
 	
     if (tokens.isNull()) {
-        writeln("lexing failed");
+        writeln("Pexing failed");
         return;
 	}
 	
     writeln(isValid(tokens.get()));
-    auto parsed = Parser.toJson(tokens.get().removeWhiteSpace(), true);
+    auto parsed = Parser.toJson(tokens.get().removeWhiteSpace(), false);
     if (parsed.isNull()) {
         writeln("Parsing failed");
         return;
     }
     writeln(test);
     writeln(parsed.get().toPrettyString());
-    writeln(__FILE__);
 }

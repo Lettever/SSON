@@ -2,6 +2,7 @@
 
 # Needed files
 !README.md
+!TODO.md
 !.gitignore
 !justfile
 

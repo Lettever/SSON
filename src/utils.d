@@ -1,6 +1,7 @@
 module utils;
 
 import std.json;
+import std.stdio;
 
 bool isBinaryDigit(dchar c) {
     return '0' <= c && c <= '1';
@@ -13,22 +14,17 @@ uint advanceWhile(string str, uint i, bool function (dchar) fp) {
 }
 
 dchar getC(string str, uint i, dchar ch) {
-    if (i >= str.length) {
-        return ch;
-    }
+    if (i >= str.length) return ch;
     return str[i];
 }
 
 JSONValue foo(JSONValue json, string[] keys, JSONValue val) {
-	writeln("utils", json);
 	if (keys.length == 0) {
 		return val;
 	}
 	try {
-	if (keys[0] !in json) {
-		json[keys[0]] = JSONValue.emptyObject;
-	}
-	json[keys[0]] = foo(json[keys[0]], keys[1 .. $], val);
+		if (keys[0] !in json) json[keys[0]] = JSONValue.emptyObject;
+		json[keys[0]] = foo(json[keys[0]], keys[1 .. $], val);
 	} catch (Exception e) {
 		writeln(e.message);
 	}

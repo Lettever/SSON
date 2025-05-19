@@ -3,6 +3,7 @@ module token;
 import std.stdio;
 import std.array;
 import std.functional;
+import std.algorithm;
 
 enum TokenType {
     Minus,

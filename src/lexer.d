@@ -1,10 +1,12 @@
 module lexer;
 
-import token;
-import utils;
 import std.conv;
 import std.typecons;
-
+import std.stdio;
+import std.ascii;
+import token;
+import utils;
+ 
 struct Lexer {
     string str;
     uint i;
@@ -117,13 +119,14 @@ struct Lexer {
         if (str[i + 1] == '+' || str[i + 1] == '-') i += 1;
         return advanceWhile(str, i + 1, &isDigit);
     }
+    
     private Nullable!string parseSpecialNumber() {
+        if (i == str.length - 1) return nullable("0");
         auto m = [
             'x': &isHexDigit,
             'o': &isOctalDigit,
             'b': &isBinaryDigit,
         ];
-        if (i == str.length - 1) return nullable("0");
         auto n = str[i + 1];
 
         if(n in m) {
