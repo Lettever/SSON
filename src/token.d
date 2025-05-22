@@ -64,8 +64,7 @@ struct Token {
             type == TokenType.False ||
             type == TokenType.Null ||
             type == TokenType.String ||
-            type == TokenType.Number ||
-            type == TokenType.Identifier
+            type == TokenType.Number
         );
     }
     
@@ -81,17 +80,15 @@ alias TokenArray = Token[];
 
 TokenArray removeWhiteSpace(TokenArray tokens) => tokens.filter!((x) => x.type != TokenType.WhiteSpace).array();
 
-bool isValid(TokenArray tokens) {
+int[] getInvalidIndexes(TokenArray tokens) {
+    int[] invalidIndexes = [];
     for (int i = 0; i < tokens.length - 1; i++) {
         auto token = tokens[i], nextToken = tokens[i + 1];
         if (token.isValue() && nextToken.isValue()) {
-            writeln("Bad at:");
-            token.print();
-            nextToken.print();
-            return false;
+            invalidIndexes ~= i;
         }
     }
-    return true;
+    return invalidIndexes;
 }
 
 bool canAppend(TokenArray tokens, TokenType type) {

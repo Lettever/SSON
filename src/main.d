@@ -15,7 +15,7 @@ void main() {
         return;
 	}
 	
-    writeln(isValid(tokens.get()));
+    // writeln(getInvalidIndexes(tokens.get()));
     auto parsed = Parser.toJson(tokens.get().removeWhiteSpace(), false);
     if (parsed.isNull()) {
         writeln("Parsing failed");
