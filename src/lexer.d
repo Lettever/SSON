@@ -36,7 +36,7 @@ struct Lexer {
         if (ch.isDigit()) return lexNumber();
         if (ch == '"' || ch == '\'') return lexString(ch);
         if (ch.isWhite()) return lexWhite();
-        writefln("i: %s, ch: %s", i, ch);
+        errors ~= __LINE__ ~ " " ~ __FUNCTION__;
         i += 1;
         return next();
     }
