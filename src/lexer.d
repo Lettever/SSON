@@ -58,9 +58,8 @@ struct Lexer {
     
     private Token lexSyntaxSymbol() {
         char ch = str[i];
-        auto t = makeAndAdvance(TokenTypeMap[ch], ch.to!(string));
         col += 1;
-        return t;
+        return makeAndAdvance(TokenTypeMap[ch], ch.to!(string));
     }
     
     private Token lexWhite() {
@@ -71,7 +70,6 @@ struct Lexer {
         }
         return makeAndAdvance(TokenType.WhiteSpace, " ");
     }
-
 
     private string tokenizeIdentifier() {
         uint j = advanceWhile(str, i + 1, (x) => isAlphaNum(x) || x == '_' || x == '-');
