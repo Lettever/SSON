@@ -45,13 +45,13 @@ struct Lexer {
         TokenArray tokens = [];
         while (true) {
             auto token = next();
-            if (token.isNull()) {
-                writeln("Lexing failed");
+            if (token.type == TokenType.Illegal) {
+                errors ~= __LINE__ ~ " " ~ __FUNCTION__;
                 return Nullable!TokenArray.init;
             }
-            if (token.get().type == TokenType.EOF) break;
-            if (!canAppend(tokens, token.get().type)) continue;
-            tokens ~= token.get();
+            if (token.type == TokenType.EOF) break;
+            if (!canAppend(tokens, token.type)) continue;
+            tokens ~= token;
         }
         return nullable(tokens);
     }
@@ -64,13 +64,12 @@ struct Lexer {
     }
     
     private Token lexWhite() {
-        auto t = makeAndAdvance(TokenType.WhiteSpace, " ");
         col += 1;
-        if (ch == '\n') {
+        if (str[i] == '\n') {
             row += 1;
             col = 1;
         }
-        return t;
+        return makeAndAdvance(TokenType.WhiteSpace, " ");
     }
 
 
