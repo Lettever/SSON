@@ -6,7 +6,15 @@ import std.stdio;
 import std.ascii;
 import token;
 import utils;
- 
+
+struct TokenizeResult {
+    string span;
+    bool isValid;
+
+    static auto success(string span) => TokenizeResult(span, true);
+    static auto failure(string span) => TokenizeResult(span, false);
+}
+
 struct Lexer {
     string str;
     uint i;
@@ -20,53 +28,14 @@ struct Lexer {
         return Token(type, span, row, col);
     }
     
-    private Nullable!Token next() {
-        if (i >= str.length) return nullable(makeAndAdvance(TokenType.EOF, ""));
+    private Token next() {
+        if (i >= str.length) return makeAndAdvance(TokenType.EOF, "");
         char ch = str[i];
-        if (ch in TokenTypeMap) {
-            auto t = makeAndAdvance(TokenTypeMap[ch], ch.to!(string));
-            col += 1;
-            return nullable(t);
-        }
-        if (ch.isAlpha()) return nullable(lexIdentifier());
-        //{
-        //    string parsedIdentifier = tokenizeIdentifier();
-        //    auto type = TokenTypeMapKeyword.get(parsedIdentifier, TokenType.Identifier);
-        //    auto t = makeAndAdvance(type, parsedIdentifier);
-        //    col += parsedIdentifier.length;
-        //    return t;
-        //}
-        if (ch.isDigit()) {
-            Nullable!string parsedNumber = tokenizeNumber();
-            if (parsedNumber.isNull()) {
-                writeln("Invalid number at ", row, " ", col);
-                return Nullable!Token.init;
-            }
-            auto t = makeAndAdvance(TokenType.Number, parsedNumber.get());
-            col += parsedNumber.get().length;
-            return nullable(t);
-        }
-        if (ch == '"' || ch == '\'') {
-            int rowTemp = row, colTemp = col;
-            Nullable!string tokenizedString = tokenizeString(ch, rowTemp, colTemp);
-            if (tokenizedString.isNull()) {
-                writeln("Invalid string at ", i);
-                return Nullable!Token.init;
-            }
-            auto t = makeAndAdvance(TokenType.String, tokenizedString.get());
-            row = rowTemp;
-            col = colTemp;
-            return nullable(t);
-        }
-        if (ch.isWhite()) {
-            auto t = makeAndAdvance(TokenType.WhiteSpace, " ");
-            col += 1;
-            if (ch == '\n') {
-                row += 1;
-                col = 1;
-            }
-            return nullable(t);
-        }
+        if (ch in TokenTypeMap) return lexSyntaxSymbol();
+        if (ch.isAlpha()) return lexIdentifier();
+        if (ch.isDigit()) return lexNumber();
+        if (ch == '"' || ch == '\'') return lexString(ch);
+        if (ch.isWhite()) return lexWhite();
         writefln("i: %s, ch: %s", i, ch);
         i += 1;
         return next();
@@ -87,6 +56,24 @@ struct Lexer {
         return nullable(tokens);
     }
     
+    private Token lexSyntaxSymbol() {
+        char ch = str[i];
+        auto t = makeAndAdvance(TokenTypeMap[ch], ch.to!(string));
+        col += 1;
+        return t;
+    }
+    
+    private Token lexWhite() {
+        auto t = makeAndAdvance(TokenType.WhiteSpace, " ");
+        col += 1;
+        if (ch == '\n') {
+            row += 1;
+            col = 1;
+        }
+        return t;
+    }
+
+
     private string tokenizeIdentifier() {
         uint j = advanceWhile(str, i + 1, (x) => isAlphaNum(x) || x == '_' || x == '-');
         return str[i .. j];
@@ -100,37 +87,41 @@ struct Lexer {
         return t;
     }
     
-    private Nullable!string tokenizeNumber() {
-        if (str[i] == '0' && str.getC(i + 1, '\0') != '.') {
-            return tokenizeSpecialNumber();
-        }
+    bool shouldTokenizeSpecialNumber() {
+        return str[i] == '0' && str.getC(i + 1, '\0') != '.';
+    }
+    
+    private TokenizeResult tokenizeNumber() {
+        if (shouldTokenizeSpecialNumber()) return tokenizeSpecialNumber();
         
         uint j = tokenizeIntegerPart(i);
         if (str.getC(j, '\0') == '.') {
-            if (!str.getC(j + 1, '\0').isDigit()) return Nullable!string.init;
+            if (!str.getC(j + 1, '\0').isDigit()) {
+                errors ~= __LINE__ ~ " " ~ __FUNCTION__;
+                return TokenizeResult.failure(str[i .. j]);
+            }
             j = tokenizeDecimalPart(j);
         }
         if (str.getC(j, '\0').toLower() == 'e') {
             dchar c = str.getC(j + 1, '\0');
-            if (!c.isDigit() && c != '-' && c != '+') return Nullable!string.init;
+            if (!c.isDigit() && c != '-' && c != '+') {
+                errors ~= __LINE__ ~ " " ~ __FUNCTION__;
+                return TokenizeResult.failure(str[i .. j]);
+            }
             j = tokenizeExponentPart(j);
         }
-        return nullable(str[i .. j]);
+        return TokenizeResult.success(str[i .. j]);
     }
 
-    private uint tokenizeIntegerPart(uint i) {
-        return advanceWhile(str, i + 1, &isDigit);
-    }
-    private uint tokenizeDecimalPart(uint i) {
-        return advanceWhile(str, i + 1, &isDigit);
-    }
+    private uint tokenizeIntegerPart(uint i) => advanceWhile(str, i + 1, &isDigit);
+    private uint tokenizeDecimalPart(uint i) => advanceWhile(str, i + 1, &isDigit);
     private uint tokenizeExponentPart(uint i) {
         if (str[i + 1] == '+' || str[i + 1] == '-') i += 1;
         return advanceWhile(str, i + 1, &isDigit);
     }
     
-    private Nullable!string tokenizeSpecialNumber() {
-        if (i == str.length - 1) return nullable("0");
+    private TokenizeResult tokenizeSpecialNumber() {
+        if (i == str.length - 1) return TokenizeResult.success("0");
         auto m = [
             'x': &isHexDigit,
             'o': &isOctalDigit,
@@ -140,13 +131,26 @@ struct Lexer {
 
         if(n in m) {
             uint j = advanceWhile(str, i + 2, m[n]);
-            if (i + 2 == j) return Nullable!string.init;
-            return nullable(str[i .. j]);
+            if (i + 2 == j) {
+                errors ~= __LINE__ ~ " " ~ __FUNCTION__;
+                return TokenizeResult.failure(str[i .. j]);
+            }
+            return TokenizeResult.success(str[i .. j]);
         }
-        return nullable("0");
+        return TokenizeResult.success("0");
     }
     
-    private Nullable!string tokenizeString(char delim, ref int rowTemp, ref int colTemp) {
+    private Token lexNumber() {
+        TokenizeResult tokenizedNumber = tokenizeNumber();
+        TokenType type = tokenizedNumber.isValid ? TokenType.Number : TokenType.Illegal;
+        col += tokenizedNumber.span.length;
+        if (type == TokenType.Illegal) {
+            errors ~= __LINE__ ~ " " ~ __FUNCTION__;
+        }
+        return makeAndAdvance(type, tokenizedNumber.span);
+    }
+
+    private TokenizeResult tokenizeString(char delim, ref int rowTemp, ref int colTemp) {
         ulong len = str.length;
         uint j = i + 1;
         
@@ -166,7 +170,22 @@ struct Lexer {
         }
         j += 1;
         
-        if (j > len) return Nullable!string.init;
-        return nullable(str[i .. j]);
+        if (j > len) {
+            errors ~= __LINE__ ~ " " ~ __FUNCTION__;
+            return TokenizeResult.failure(str[i .. $]);
+        }
+        return TokenizeResult.success(str[i .. j]);
+    }
+
+    private Token lexString(char delim) {
+        int rowTemp = row, colTemp = col;
+        TokenizeResult tokenizedString = tokenizeString(delim, rowTemp, colTemp);
+        row = rowTemp;
+        col = colTemp;
+        TokenType type = tokenizedString.isValid ? TokenType.String : TokenType.Illegal;
+        if (type == TokenType.Illegal) {
+            errors ~= __LINE__ ~ " " ~ __FUNCTION__;
+        }
+        return makeAndAdvance(type, tokenizedString.span);
     }
 }

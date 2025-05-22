@@ -2,7 +2,6 @@
 - Token:
 	- use SyntaxSymbol for the single space things
 	- Do error handling differently
-	- Fix is valid, ensure there is never another value after another
 - Lexer:
 	- In the "next" method seperate each if body into another method
 	- For error handling, append to the "errors" array instead of printing to the screen
