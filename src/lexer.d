@@ -84,9 +84,7 @@ struct Lexer {
         return t;
     }
     
-    bool shouldTokenizeSpecialNumber() {
-        return str[i] == '0' && str.getC(i + 1, '\0') != '.';
-    }
+    bool shouldTokenizeSpecialNumber() => str[i] == '0' && str.getC(i + 1, '\0') != '.';
     
     private TokenizeResult tokenizeNumber() {
         if (shouldTokenizeSpecialNumber()) return tokenizeSpecialNumber();
@@ -128,11 +126,9 @@ struct Lexer {
 
         if(n in m) {
             uint j = advanceWhile(str, i + 2, m[n]);
-            if (i + 2 == j) {
-                errors ~= __LINE__ ~ " " ~ __FUNCTION__;
-                return TokenizeResult.failure(str[i .. j]);
-            }
-            return TokenizeResult.success(str[i .. j]);
+            if (i + 2 != j) return TokenizeResult.success(str[i .. j]);
+            errors ~= __LINE__ ~ " " ~ __FUNCTION__;
+            return TokenizeResult.failure(str[i .. j]);
         }
         return TokenizeResult.success("0");
     }
