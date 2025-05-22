@@ -1,6 +1,5 @@
 - Fix error handling
 - Token:
-	- use SyntaxSymbol for the single space things
 	- Do error handling differently
 - Lexer:
 	- Still fix the impl function to print the errors if any
